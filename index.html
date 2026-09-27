@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>二子玉川花火 観覧マップ</title>
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>二子玉川花火 観覧マップ</h1>
+      <p class="event">
+        2026年10月3日（土）18:00–19:00 ／ 世田谷区たまがわ花火大会・川崎市制記念多摩川花火大会（同時開催）
+        <span class="warn">荒天中止・順延なし</span>
+      </p>
+    </header>
+
+    <main class="layout">
+      <section class="map-pane">
+        <div id="map"></div>
+        <div class="legend">
+          <div class="legend-title">建物の屋上から見える割合</div>
+          <div class="legend-bar"></div>
+          <div class="legend-scale"><span>0%</span><span>50%</span><span>100%</span></div>
+          <div class="legend-marks">
+            <span><i class="dot public"></i>無料</span>
+            <span><i class="dot customers"></i>店舗・ホテル</span>
+            <span><i class="dot paid"></i>有料席</span>
+            <span><i class="dot restricted"></i>当日立入不可</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel">
+        <div class="filters">
+          <label><input type="checkbox" id="only-open" checked /> 当日入れる場所だけ</label>
+          <select id="want">
+            <option value="both">両方の花火</option>
+            <option value="tokyo">世田谷側の花火</option>
+            <option value="kanagawa">川崎側の花火</option>
+          </select>
+        </div>
+        <ol id="spot-list" class="spot-list"></ol>
+        <div id="detail" class="detail" hidden></div>
+      </aside>
+    </main>
+
+    <div id="viewer-modal" class="viewer-modal" hidden>
+      <div class="viewer-head">
+        <div>
+          <div id="viewer-title" class="viewer-title"></div>
+          <div id="viewer-sub" class="viewer-sub"></div>
+        </div>
+        <div id="viewer-levels" class="viewer-levels"></div>
+        <button id="viewer-close" class="close" aria-label="閉じる">×</button>
+      </div>
+      <div id="viewer" class="viewer"></div>
+      <div class="viewer-hint">ドラッグで見回す・ホイールでズーム。建物は PLATEAU の3D都市モデル、木や看板は入っていません。</div>
+    </div>
+
+    <footer id="attribution" class="attribution"></footer>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

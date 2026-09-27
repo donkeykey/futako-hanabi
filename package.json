@@ -1,0 +1,23 @@
+{
+  "name": "futako-hanabi",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "data:fetch": "uv run scripts/fetch_plateau.py && uv run scripts/fetch_dem.py",
+    "data:build": "node scripts/build-data.ts",
+    "data": "npm run data:fetch && npm run data:build"
+  },
+  "devDependencies": {
+    "@types/three": "^0.186.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.0"
+  },
+  "dependencies": {
+    "maplibre-gl": "^6.11.2",
+    "three": "^0.186.1"
+  }
+}
