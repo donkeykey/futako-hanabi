@@ -1,5 +1,6 @@
 import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import "./style.css";
 import { toLocal } from "./geo.ts";
 import type { Access, Building, Level, Side, SiteData, Spot, Terrain } from "./types.ts";
@@ -17,6 +18,9 @@ const ACCESS_LABEL: Record<Access, string> = {
 };
 const FLOOR = 3.2;
 const EYE = 1.6;
+
+// MapLibre finds its worker next to its own module, which breaks once bundled.
+maplibregl.setWorkerUrl(maplibreWorkerUrl);
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
