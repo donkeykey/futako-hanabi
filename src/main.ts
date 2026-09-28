@@ -185,19 +185,6 @@ for (const l of site.launches) {
   new maplibregl.Marker({ element: el }).setLngLat([l.lon, l.lat]).setPopup(new maplibregl.Popup().setText(l.name)).addTo(map);
 }
 
-const markers = new Map<string, HTMLElement>();
-for (const s of site.spots) {
-  const el = document.createElement("div");
-  el.className = `marker ${s.access}`;
-  el.title = s.name;
-  el.addEventListener("click", (e) => {
-    e.stopPropagation();
-    selectSpot(s.id, true);
-  });
-  new maplibregl.Marker({ element: el }).setLngLat([s.lon, s.lat]).addTo(map);
-  markers.set(s.id, el);
-}
-
 // ---------------------------------------------------------------- popups: any building, any point on the ground
 
 let popup: maplibregl.Popup | null = null;
@@ -329,10 +316,6 @@ function renderLists() {
     )
     .join("");
 
-  for (const [id, el] of markers) {
-    const s = site.spots.find((x) => x.id === id)!;
-    el.style.display = onlyOpen.checked && s.access === "restricted" ? "none" : "";
-  }
 }
 
 function gemMapUrl(g: Gem) {

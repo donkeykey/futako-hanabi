@@ -83,18 +83,7 @@ body { display: flex; flex-direction: column; }
 .legend-title { font-weight: 600; margin-bottom: 4px; }
 .legend-bar { width: 180px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, #8a94a6, #ffd43b 60%, #e8590c); }
 .legend-scale { display: flex; justify-content: space-between; color: var(--muted); }
-.legend-marks { display: flex; flex-wrap: wrap; gap: 6px 10px; margin-top: 6px; }
-.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 3px; vertical-align: -1px; border: 2px solid #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.25); }
-.dot.public { background: var(--public); }
-.dot.customers { background: var(--customers); }
-.dot.paid { background: var(--paid); }
-.dot.restricted { background: var(--restricted); }
 
-.marker { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 4px rgb(0 0 0 / 0.4); cursor: pointer; }
-.marker.public { background: var(--public); }
-.marker.customers { background: var(--customers); }
-.marker.paid { background: var(--paid); }
-.marker.restricted { background: var(--restricted); }
 .launch-marker { font-size: 26px; filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.5)); }
 
 .viewer-modal { position: fixed; inset: 0; background: #05070d; z-index: 20; display: flex; flex-direction: column; color: #e8e9ec; }
