@@ -105,7 +105,8 @@ body { display: flex; flex-direction: column; }
 .viewer-levels { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
 .viewer-levels button { background: #1a1f2b; color: #e8e9ec; border: 1px solid #333a4a; border-radius: 6px; padding: 5px 10px; cursor: pointer; }
 .viewer-levels button.active { background: var(--accent); border-color: var(--accent); }
-.close { background: none; border: 0; color: #e8e9ec; font-size: 26px; cursor: pointer; padding: 0 6px; }
+.close { background: #2a3040; border: 1px solid #444c60; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; padding: 10px 16px; border-radius: 8px; min-height: 44px; min-width: 44px; }
+.close:hover { background: #3a4256; }
 .viewer { flex: 1; min-height: 0; }
 .viewer-hint { padding: 6px 14px; color: #7d8492; font-size: 11px; }
 
@@ -123,3 +124,25 @@ body { display: flex; flex-direction: column; }
   .viewer-head { flex-wrap: wrap; }
   .viewer-levels { margin-left: 0; }
 }
+
+.tabs { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--surface); z-index: 2; }
+.tab { padding: 12px 8px; border: 0; background: none; color: var(--muted); font-size: 14px; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; }
+.tab.active { color: var(--text); border-bottom-color: var(--accent); }
+.filters { top: 45px; }
+.gems-note { margin: 0; padding: 10px 14px; font-size: 12px; color: var(--muted); line-height: 1.6; border-bottom: 1px solid var(--line); }
+.links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; grid-column: 1 / -1; }
+.gmap { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--customers); text-decoration: none; background: var(--surface); }
+.gmap:hover { border-color: var(--customers); }
+.legend-toggle { display: block; margin-top: 8px; }
+.legend-hint { margin-top: 4px; color: var(--muted); }
+.popup h3 { margin: 0 0 4px; font-size: 13px; }
+.popup p { margin: 6px 0; font-size: 12px; line-height: 1.5; }
+.popup .actions { display: grid; gap: 6px; margin-top: 8px; }
+.popup .actions button { padding: 10px; border: 0; border-radius: 8px; background: var(--accent); color: #fff; font-size: 14px; cursor: pointer; min-height: 44px; }
+.popup .actions button:disabled { opacity: 0.6; cursor: progress; }
+.popup .actions .gmap { justify-content: center; padding: 8px; font-size: 13px; }
+.maplibregl-popup-close-button { font-size: 22px; width: 36px; height: 36px; }
+.loading { position: fixed; inset: 0; z-index: 30; display: flex; align-items: center; justify-content: center; gap: 12px; background: rgb(0 0 0 / 0.45); color: #fff; font-size: 15px; }
+.loading[hidden] { display: none; }
+.spinner { width: 28px; height: 28px; border: 3px solid rgb(255 255 255 / 0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }

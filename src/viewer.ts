@@ -1,7 +1,10 @@
 import * as THREE from "three";
 import { FireworksShow, type LaunchSite } from "./fireworks.ts";
-import { pointInPolygon } from "./geo.ts";
 import type { Building, LaunchArea, Terrain } from "./types.ts";
+
+// Draw every building within NEAR_RADIUS of the viewer, and only taller ones further away.
+const NEAR_RADIUS = 1500;
+const FAR_MIN_HEIGHT = 12;
 
 // Local (x east, y north, z up) -> three.js (x east, y up, z south)
 const v3 = (x: number, y: number, z: number) => new THREE.Vector3(x, z, -y);
@@ -17,6 +20,7 @@ export class SpotViewer {
   private pitch = 0.15;
   private frame = 0;
   private resizeObserver: ResizeObserver;
+  private cityKey = "";
   private container: HTMLElement;
   private buildings: Building[];
 
@@ -48,12 +52,25 @@ export class SpotViewer {
     this.loop();
   }
 
-  /** Stand at (x, y) with eyes at `eye` m above sea level, facing the `focus` launch area. */
-  view(x: number, y: number, eye: number, launches: LaunchArea[], focus: LaunchArea) {
-    // Hide the building we are standing in, otherwise its walls block the view.
-    const visible = this.buildings.filter((b) => !pointInPolygon(x, y, b.ring));
-    this.city.clear();
-    this.city.add(buildingsMesh(visible));
+  /**
+   * Stand at (x, y) with eyes at `eye` m above sea level, facing the `focus` launch area.
+   * `exclude` are the building parts we stand in (their walls would block the view).
+   */
+  view(x: number, y: number, eye: number, launches: LaunchArea[], focus: LaunchArea, exclude: Building[] = []) {
+    // Rebuilding the city mesh is the slow part, so only do it when the standpoint moves.
+    const key = `${Math.round(x)},${Math.round(y)}`;
+    if (key !== this.cityKey) {
+      this.cityKey = key;
+      const near = NEAR_RADIUS * NEAR_RADIUS;
+      const visible = this.buildings.filter((b) => {
+        if (exclude.includes(b)) return false;
+        const [bx, by] = b.ring[0];
+        return b.height >= FAR_MIN_HEIGHT || (bx - x) ** 2 + (by - y) ** 2 < near;
+      });
+      for (const m of this.city.children as THREE.Mesh[]) m.geometry.dispose();
+      this.city.clear();
+      this.city.add(buildingsMesh(visible));
+    }
 
     this.camera.position.copy(v3(x, y, eye));
     const sites: LaunchSite[] = launches.map((l) => ({ id: l.id, position: v3(l.x, l.y, l.ground) }));

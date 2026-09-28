@@ -4,16 +4,17 @@
 """Fetch PLATEAU building footprints + heights around Futako-Tamagawa.
 
 Pulls only the per-mesh building CityGML files out of the official PLATEAU ZIPs
-(HTTP range requests, ~27 MB instead of ~2.8 GB), converts them to GeoJSON.
+(HTTP range requests instead of downloading several GB), converts them to GeoJSON.
 
     uv run scripts/fetch_plateau.py      ->  data-raw/buildings.geojson
 
-Source: 3D都市モデル（Project PLATEAU）世田谷区（2025年度）・川崎市（2022年度）（国土交通省）
+Source: 3D都市モデル（Project PLATEAU）世田谷区（2025年度）・川崎市（2022年度）・大田区・目黒区・狛江市（2023年度）（国土交通省）
 """
 
 import io
 import json
 import math
+import re
 import sys
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -23,20 +24,36 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "data-raw"
 CENTER = (35.6115, 139.6275)  # lat, lon
-RADIUS_M = 2200
+RADIUS_M = 5000
 
-CITIES = {
-    "13112": {
-        "zip": "https://assets.cms.plateau.reearth.io/assets/4d/e9ecc6-42d0-47ad-84a7-93d07c7766a8/13112_setagaya-ku_pref_2025_citygml_1_op.zip",
-        "meshes": ["53393438", "53393439", "53393448", "53393449", "53393458", "53393459", "53393511",
-                   "53393520", "53393521", "53393530", "53393531", "53393540", "53393541", "53393550", "53393551"],
-    },
-    "14130": {
-        "zip": "https://assets.cms.plateau.reearth.io/assets/40/25bd0a-f174-4f55-a9bd-0e6868ece0ae/14130_kawasaki-shi_city_2022_citygml_4_op.zip",
-        "meshes": ["53393418", "53393419", "53393428", "53393429", "53393438", "53393439", "53393510",
-                   "53393511", "53393520"],
-    },
+CITIES = {  # PLATEAU CityGML ZIPs (buildings are pulled out per 3次メッシュ)
+    "13112": "https://assets.cms.plateau.reearth.io/assets/4d/e9ecc6-42d0-47ad-84a7-93d07c7766a8/13112_setagaya-ku_pref_2025_citygml_1_op.zip",
+    "14130": "https://assets.cms.plateau.reearth.io/assets/40/25bd0a-f174-4f55-a9bd-0e6868ece0ae/14130_kawasaki-shi_city_2022_citygml_4_op.zip",
+    "13111": "https://assets.cms.plateau.reearth.io/assets/ba/c3b8f9-80fc-4625-933c-50b751171cd7/13111_ota-ku_pref_2023_citygml_2_op.zip",
+    "13110": "https://assets.cms.plateau.reearth.io/assets/b9/6a30e5-9726-42df-90cf-92fddd9b0aa5/13110_meguro-ku_pref_2023_citygml_2_op.zip",
+    "13219": "https://assets.cms.plateau.reearth.io/assets/6b/96a5e5-6084-4555-8b51-aadc8695fdd0/13219_komae-shi_city_2023_citygml_2_op.zip",
 }
+
+
+def mesh3(lat: float, lon: float) -> str:
+    p, u = int(lat * 1.5), int(lon - 100)
+    la, lo = lat * 1.5 - p, lon - 100 - u
+    q, v = int(la * 8), int(lo * 8)
+    return f"{p}{u}{q}{v}{int((la * 8 - q) * 10)}{int((lo * 8 - v) * 10)}"
+
+
+def meshes_in_radius() -> set[str]:
+    dlat = RADIUS_M / 111320
+    dlon = RADIUS_M / (111320 * math.cos(math.radians(CENTER[0])))
+    out, lat = set(), CENTER[0] - dlat
+    while lat <= CENTER[0] + dlat + 0.004:
+        lon = CENTER[1] - dlon
+        while lon <= CENTER[1] + dlon + 0.006:
+            out.add(mesh3(min(lat, CENTER[0] + dlat), min(lon, CENTER[1] + dlon)))
+            lon += 0.005
+        lat += 0.003
+    return out
+
 
 NS = {"bldg": "http://www.opengis.net/citygml/building/2.0", "gml": "http://www.opengis.net/gml"}
 B = "{%s}" % NS["bldg"]
@@ -70,15 +87,14 @@ class HttpFile(io.RawIOBase):
         return len(data)
 
 
-def download(city: str) -> list[Path]:
-    info = CITIES[city]
-    out_dir = RAW / "gml" / city  # per city: meshes 53393438/39 exist in both cities
+def download(city: str, meshes: set[str]) -> list[Path]:
+    out_dir = RAW / "gml" / city  # per city: border meshes exist in several cities
     out_dir.mkdir(parents=True, exist_ok=True)
-    wanted = {f"udx/bldg/{m}_bldg_6697_op.gml" for m in info["meshes"]}
     paths = []
-    with zipfile.ZipFile(io.BufferedReader(HttpFile(info["zip"]), buffer_size=1 << 20)) as z:
+    with zipfile.ZipFile(io.BufferedReader(HttpFile(CITIES[city]), buffer_size=1 << 20)) as z:
         for name in z.namelist():
-            if not any(name.endswith(w) for w in wanted):
+            m = re.search(r"udx/bldg/(\d{8})_bldg_6697.*\.gml$", name)
+            if not m or m.group(1) not in meshes:
                 continue
             path = out_dir / Path(name).name
             if not path.exists():
@@ -128,6 +144,7 @@ def convert(paths: list[Path]) -> list[dict]:
                 height = storeys * 3.2
             if height is None and ground is not None and top is not None and top - ground > 3.01:
                 height = top - ground
+            usage_el = el.find("bldg:usage", NS)
             name_el = el.find("gml:name", NS)
             feats.append({
                 "type": "Feature",
@@ -137,6 +154,7 @@ def convert(paths: list[Path]) -> list[dict]:
                     "height": round(height, 1) if height else None,
                     "storeys": storeys,
                     "ground": round(ground, 2) if ground is not None else None,
+                    "usage": usage_el.text if usage_el is not None else None,
                 },
                 "geometry": {"type": "Polygon", "coordinates": [coords]},
             })
@@ -145,10 +163,12 @@ def convert(paths: list[Path]) -> list[dict]:
 
 
 def main():
+    meshes = meshes_in_radius()
+    print(f"{len(meshes)} meshes within {RADIUS_M} m")
     paths = []
     for city in CITIES:
         print(f"download {city}", flush=True)
-        paths += download(city)
+        paths += download(city, meshes)
     feats = convert(paths)
     out = RAW / "buildings.geojson"
     out.write_text(json.dumps({"type": "FeatureCollection", "features": feats}, ensure_ascii=False))

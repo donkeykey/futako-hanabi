@@ -1,13 +1,15 @@
 // Explain why a spot can or cannot see the launches: node scripts/debug-spot.ts <lat> <lon> [eyeAboveGround]
 import { readFileSync } from "node:fs";
 import { toLocal } from "../src/geo.ts";
+import { decodeBuildings } from "../src/buildings-bin.ts";
 import { Occluders } from "../src/visibility.ts";
 import { pointInPolygon } from "../src/geo.ts";
 import type { Building, Terrain } from "../src/types.ts";
 
 const root = new URL("..", import.meta.url).pathname;
 const terrain: Terrain = JSON.parse(readFileSync(`${root}data-raw/terrain_5m.json`, "utf8"));
-const buildings: Building[] = JSON.parse(readFileSync(`${root}public/data/buildings.json`, "utf8"));
+const bin = readFileSync(`${root}public/data/buildings.bin`);
+const buildings: Building[] = decodeBuildings(bin.buffer.slice(bin.byteOffset, bin.byteOffset + bin.byteLength));
 const site = JSON.parse(readFileSync(`${root}public/data/site.json`, "utf8"));
 const occ = new Occluders(buildings, terrain);
 const [lat, lon, above = "1.6"] = process.argv.slice(2).map(String);

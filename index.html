@@ -19,7 +19,7 @@
       <section class="map-pane">
         <div id="map"></div>
         <div class="legend">
-          <div class="legend-title">建物の屋上から見える割合</div>
+          <div class="legend-title">見える割合（建物は屋上、地面は目の高さ）</div>
           <div class="legend-bar"></div>
           <div class="legend-scale"><span>0%</span><span>50%</span><span>100%</span></div>
           <div class="legend-marks">
@@ -28,10 +28,16 @@
             <span><i class="dot paid"></i>有料席</span>
             <span><i class="dot restricted"></i>当日立入不可</span>
           </div>
+          <label class="legend-toggle"><input type="checkbox" id="show-ground" checked /> 道路・公園など地面の見え方</label>
+          <div class="legend-hint">地図のどこでもクリックすると、その場所からの見え方を計算します</div>
         </div>
       </section>
 
       <aside class="panel">
+        <div class="tabs" role="tablist">
+          <button class="tab active" data-tab="spots" role="tab">おすすめスポット</button>
+          <button class="tab" data-tab="gems" role="tab">穴場ビル</button>
+        </div>
         <div class="filters">
           <label><input type="checkbox" id="only-open" checked /> 当日入れる場所だけ</label>
           <select id="want">
@@ -41,6 +47,12 @@
           </select>
         </div>
         <ol id="spot-list" class="spot-list"></ol>
+        <div id="gems-pane" hidden>
+          <p class="gems-note">
+            飲食店・ホテル・商業施設が入っている建物のうち、見晴らしが良いと計算された場所です。入れる階や営業時間はお店によるので、行く前に確認してください。
+          </p>
+          <ol id="gem-list" class="spot-list"></ol>
+        </div>
         <div id="detail" class="detail" hidden></div>
       </aside>
     </main>
@@ -52,11 +64,13 @@
           <div id="viewer-sub" class="viewer-sub"></div>
         </div>
         <div id="viewer-levels" class="viewer-levels"></div>
-        <button id="viewer-close" class="close" aria-label="閉じる">×</button>
+        <button id="viewer-close" class="close" aria-label="閉じる">✕ 閉じる</button>
       </div>
       <div id="viewer" class="viewer"></div>
       <div class="viewer-hint">ドラッグで見回す・ホイールでズーム。建物は PLATEAU の3D都市モデル、木や看板は入っていません。</div>
     </div>
+
+    <div id="loading" class="loading" hidden><div class="spinner"></div><span id="loading-text">計算中…</span></div>
 
     <footer id="attribution" class="attribution"></footer>
     <script type="module" src="/src/main.ts"></script>

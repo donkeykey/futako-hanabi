@@ -23,7 +23,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parent.parent
 RAW = ROOT / "data-raw"
 ORIGIN = (35.6115, 139.6275)  # lat, lon (must match src/geo.ts)
-HALF = 2400  # metres from origin to grid edge
+HALF = 5200  # metres from origin to grid edge (covers the 5 km building radius)
 EARTH_RADIUS = 6378137
 M_PER_DEG_LAT = EARTH_RADIUS * math.pi / 180
 M_PER_DEG_LON = M_PER_DEG_LAT * math.cos(math.radians(ORIGIN[0]))

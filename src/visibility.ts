@@ -51,15 +51,21 @@ export class Occluders {
     );
   }
 
-  /** Building that contains (x, y), if any. */
-  buildingAt(x: number, y: number): Building | undefined {
+  /** Buildings whose footprint contains (x, y). PLATEAU splits some buildings into overlapping parts. */
+  buildingsAt(x: number, y: number): Building[] {
     const cell = this.cells.get(`${Math.floor(x / this.cellSize)},${Math.floor(y / this.cellSize)}`) ?? [];
-    return cell.find((c) => x >= c.minX && x <= c.maxX && y >= c.minY && y <= c.maxY && pointInPolygon(x, y, c.b.ring))
-      ?.b;
+    return cell
+      .filter((c) => x >= c.minX && x <= c.maxX && y >= c.minY && y <= c.maxY && pointInPolygon(x, y, c.b.ring))
+      .map((c) => c.b);
   }
 
-  /** True if the straight line from `from` to `to` (x, y, z) is not blocked. `ignore` is the viewer's own building. */
-  clear(from: [number, number, number], to: [number, number, number], ignore?: Building, step = 6): boolean {
+  /** Tallest building that contains (x, y), if any. */
+  buildingAt(x: number, y: number): Building | undefined {
+    return this.buildingsAt(x, y).sort((a, b) => b.ground + b.height - (a.ground + a.height))[0];
+  }
+
+  /** True if the straight line from `from` to `to` (x, y, z) is not blocked. `ignore` holds the viewer's own building. */
+  clear(from: [number, number, number], to: [number, number, number], ignore?: Set<Building>, step = 6): boolean {
     const [x0, y0, z0] = from;
     const [x1, y1, z1] = to;
     const dist = Math.hypot(x1 - x0, y1 - y0);
@@ -73,7 +79,7 @@ export class Occluders {
       const cell = this.cells.get(`${Math.floor(x / this.cellSize)},${Math.floor(y / this.cellSize)}`);
       if (!cell) continue;
       for (const c of cell) {
-        if (c.b === ignore || c.top < z) continue;
+        if (c.top < z || ignore?.has(c.b)) continue;
         if (x < c.minX || x > c.maxX || y < c.minY || y > c.maxY) continue;
         if (pointInPolygon(x, y, c.b.ring)) return false;
       }
@@ -82,16 +88,25 @@ export class Occluders {
   }
 }
 
-/** Burst points a viewer should see: several positions over each launch area at typical burst heights. */
-export function burstTargets(launches: LaunchArea[]): { side: Side; p: [number, number, number] }[] {
-  const heights = [120, 160, 190, 220]; // 3号-6号 burst heights (m above the launch site)
-  const offsets: [number, number][] = [
-    [0, 0],
-    [-80, 0],
-    [80, 0],
-    [0, -80],
-    [0, 80],
-  ];
+/**
+ * Burst points a viewer should see: several positions over each launch area at typical burst heights.
+ * `coarse` uses 6 points per side instead of 20 (for colouring every building on the map).
+ */
+export function burstTargets(launches: LaunchArea[], coarse = false): { side: Side; p: [number, number, number] }[] {
+  const heights = coarse ? [120, 190] : [120, 160, 190, 220]; // 3号-6号 burst heights (m above the launch site)
+  const offsets: [number, number][] = coarse
+    ? [
+        [0, 0],
+        [-80, 0],
+        [80, 0],
+      ]
+    : [
+        [0, 0],
+        [-80, 0],
+        [80, 0],
+        [0, -80],
+        [0, 80],
+      ];
   const out: { side: Side; p: [number, number, number] }[] = [];
   for (const l of launches) {
     for (const h of heights) {
@@ -108,13 +123,14 @@ export function visibilityFrom(
   y: number,
   eye: number,
   targets: ReturnType<typeof burstTargets>,
+  step = 6,
 ): Record<Side, number> {
-  const ignore = occ.buildingAt(x, y);
+  const ignore = new Set(occ.buildingsAt(x, y));
   const count = { tokyo: 0, kanagawa: 0 };
   const seen = { tokyo: 0, kanagawa: 0 };
   for (const t of targets) {
     count[t.side]++;
-    if (occ.clear([x, y, eye], t.p, ignore)) seen[t.side]++;
+    if (occ.clear([x, y, eye], t.p, ignore, step)) seen[t.side]++;
   }
   return {
     tokyo: count.tokyo ? seen.tokyo / count.tokyo : 0,

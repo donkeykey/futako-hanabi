@@ -7,14 +7,16 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "data:fetch": "uv run scripts/fetch_plateau.py && uv run scripts/fetch_dem.py",
-    "data:build": "node scripts/build-data.ts",
+    "data:fetch": "uv run scripts/fetch_plateau.py && uv run scripts/fetch_dem.py && uv run scripts/fetch_osm.py",
+    "data:build": "node --max-old-space-size=8192 scripts/build-data.ts",
     "data": "npm run data:fetch && npm run data:build"
   },
   "devDependencies": {
     "@types/three": "^0.186.0",
+    "geojson-vt": "^5.0.2",
     "typescript": "~6.0.2",
-    "vite": "^8.3.0"
+    "vite": "^8.3.0",
+    "vt-pbf": "^3.1.3"
   },
   "dependencies": {
     "maplibre-gl": "^6.11.2",

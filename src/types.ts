@@ -56,9 +56,28 @@ export type LaunchArea = {
   ground: number;
 };
 
+/** A building computed to have a good view, where the public may be able to go in (shops, hotels, public). */
+export type Gem = {
+  index: number; // index into buildings.bin
+  name: string;
+  named: boolean; // false when the name is only an address + usage
+  kind: string; // e.g. "商業施設", "飲食店あり"
+  places: string[]; // named places inside (from OpenStreetMap)
+  address: string;
+  lon: number;
+  lat: number;
+  x: number;
+  y: number;
+  height: number;
+  distance: number; // metres to the nearest launch site
+  levels: Level[];
+};
+
 export type SiteData = {
   generated: string;
   attribution: string[];
   launches: LaunchArea[];
   spots: Spot[];
+  gems: Gem[];
+  groundBounds: [number, number, number, number]; // west, north, east, south of the ground overlay
 };
