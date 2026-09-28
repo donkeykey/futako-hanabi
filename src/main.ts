@@ -104,12 +104,16 @@ const map = new maplibregl.Map({
   minZoom: 12,
   pitch: 50,
   bearing: -20,
+  attributionControl: { compact: true },
   maxBounds: [
     [139.55, 35.56],
     [139.705, 35.665],
   ],
 });
 map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "top-right");
+
+// Keep the legend out of the way on small screens.
+if (matchMedia("(max-width: 800px)").matches) $<HTMLDetailsElement>("legend").open = false;
 
 const want = (): Want => $<HTMLSelectElement>("want").value as Want;
 
@@ -341,7 +345,7 @@ function showDetail(html: string, onView: () => void) {
   detail.hidden = false;
   detail.innerHTML = html;
   detail.querySelector("button.view")!.addEventListener("click", onView);
-  detail.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  detail.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function selectSpot(id: string, fly: boolean) {

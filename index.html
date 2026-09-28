@@ -10,7 +10,7 @@
     <header class="topbar">
       <h1>二子玉川花火 観覧マップ</h1>
       <p class="event">
-        2026年10月3日（土）18:00–19:00 ／ 世田谷区たまがわ花火大会・川崎市制記念多摩川花火大会（同時開催）
+        2026年10月3日（土）18:00–19:00<span class="event-names"> ／ 世田谷区たまがわ花火大会・川崎市制記念多摩川花火大会（同時開催）</span>
         <span class="warn">荒天中止・順延なし</span>
       </p>
     </header>
@@ -18,13 +18,13 @@
     <main class="layout">
       <section class="map-pane">
         <div id="map"></div>
-        <div class="legend">
-          <div class="legend-title">見える割合（建物は屋上、地面は目の高さ）</div>
+        <details class="legend" id="legend" open>
+          <summary class="legend-title">見える割合（建物は屋上、地面は目の高さ）</summary>
           <div class="legend-bar"></div>
           <div class="legend-scale"><span>0%</span><span>50%</span><span>100%</span></div>
           <label class="legend-toggle"><input type="checkbox" id="show-ground" checked /> 道路・公園など地面の見え方</label>
           <div class="legend-hint">地図のどこでもクリックすると、その場所からの見え方を計算します</div>
-        </div>
+        </details>
       </section>
 
       <aside class="panel">
@@ -48,6 +48,10 @@
           <ol id="gem-list" class="spot-list"></ol>
         </div>
         <div id="detail" class="detail" hidden></div>
+        <details class="credits">
+          <summary>出典・注意事項</summary>
+          <div id="attribution"></div>
+        </details>
       </aside>
     </main>
 
@@ -66,7 +70,6 @@
 
     <div id="loading" class="loading" hidden><div class="spinner"></div><span id="loading-text">計算中…</span></div>
 
-    <footer id="attribution" class="attribution"></footer>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
